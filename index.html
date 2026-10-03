@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyBuddy - Pomodoro, Flashcards & Quiz</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Core Style -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="toast-box" id="toast-box"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-name">StudyBuddy</div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="tab-btn active" data-tab="pomo">⏱️ Pomodoro</button>
+        <button class="tab-btn" data-tab="cards">🗂️ Flashcards</button>
+        <button class="tab-btn" data-tab="quiz">📝 Quiz</button>
+      </nav>
+
+      <div class="header-utils">
+        <button class="circle-btn" id="theme-btn" title="Toggle Theme">☀️</button>
+      </div>
+    </header>
+
+    <!-- TAB 1: POMODORO CLOCK -->
+    <section class="tab-panel active" id="tab-pomo">
+      <div class="pomo-wrap">
+        <div class="pomo-modes">
+          <button class="mode-pill active" data-mode="focus">🎯 Focus (25m)</button>
+          <button class="mode-pill" data-mode="short">☕ Short Break (5m)</button>
+          <button class="mode-pill" data-mode="long">🌴 Long Break (15m)</button>
+        </div>
+
+        <div class="dial-box">
+          <svg class="dial-svg" viewBox="0 0 280 280">
+            <circle class="dial-bg" cx="140" cy="140" r="125"></circle>
+            <circle class="dial-progress" id="dial-progress" cx="140" cy="140" r="125"></circle>
+          </svg>
+          <div class="dial-center">
+            <div class="timer-digits" id="timer-display">25:00</div>
+            <div class="timer-sublabel" id="timer-label">Focus Session</div>
+          </div>
+        </div>
+
+        <div class="pomo-btns">
+          <button class="action-btn" id="btn-reset" title="Reset Timer">🔄</button>
+          <button class="start-btn" id="btn-start">
+            <span id="start-icon">▶️</span>
+            <span id="start-txt">Start Focus</span>
+          </button>
+          <button class="action-btn" id="btn-skip" title="Skip Session">⏭️</button>
+        </div>
+
+        <div class="pomo-footer">
+          <span id="session-info">Cycle 1 of 4</span>
+          <span id="pomo-today">Today: 0 mins focused</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: FLASHCARDS -->
+    <section class="tab-panel" id="tab-cards">
+      <div class="flashcards-wrap">
+        <div class="toolbar">
+          <div class="select-wrap">
+            <label style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Deck:</label>
+            <select class="app-select" id="deck-select"></select>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="btn-add-card">➕ Add Card</button>
+            <button class="btn btn-subtle" id="btn-new-deck">📂 New Deck</button>
+            <button class="btn btn-subtle" id="btn-shuffle-card">🔀 Shuffle</button>
+            <button class="btn btn-subtle" id="btn-deck-to-quiz" title="Turn flashcards into a quiz">⚡ Make Quiz</button>
+            <button class="btn btn-danger" id="btn-del-deck" title="Delete deck">🗑️</button>
+          </div>
+        </div>
+
+        <!-- 3D Flip Card -->
+        <div class="scene-3d">
+          <div class="card-box-3d" id="card-3d" title="Click or press Space to flip">
+            <div class="card-face front">
+              <span class="tag-badge" id="card-tag-front">Flashcard</span>
+              <div class="card-content-area" id="card-front-text">Question Prompt</div>
+              <span style="font-size:0.8rem; color:var(--text-muted);">👆 Click or press [Space] to flip</span>
+            </div>
+            <div class="card-face back">
+              <span class="tag-badge" id="card-tag-back">Answer</span>
+              <div class="card-content-area" id="card-back-text">Answer explanation</div>
+              <span style="font-size:0.8rem; color:var(--text-muted);">👆 Click to flip back</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-nav">
+          <button class="btn btn-subtle" id="btn-prev-card">◀ Prev</button>
+          <span id="card-counter" style="font-weight:600; font-size:0.9rem;">Card 1 of 3</span>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="rate-btn again" id="btn-rate-again">🔄 Review</button>
+            <button class="rate-btn mastered" id="btn-rate-mastered">⭐ Mastered</button>
+          </div>
+          <button class="btn btn-subtle" id="btn-next-card">Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: QUIZ (USER CAN SET IT) -->
+    <section class="tab-panel" id="tab-quiz">
+      <div class="quiz-wrap">
+        <div class="toolbar">
+          <div class="select-wrap">
+            <label style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Quiz:</label>
+            <select class="app-select" id="quiz-select"></select>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="btn-add-question">➕ Add Question</button>
+            <button class="btn btn-subtle" id="btn-new-quiz">📂 New Quiz</button>
+            <button class="btn btn-danger" id="btn-del-quiz" title="Delete quiz">🗑️</button>
+          </div>
+        </div>
+
+        <!-- Quiz Question Card -->
+        <div class="quiz-card" id="quiz-player">
+          <div class="quiz-header-status">
+            <span class="q-badge" id="quiz-progress-badge">Question 1 of 3</span>
+            <span style="font-size:0.85rem; color:var(--text-muted);">Instant Feedback</span>
+          </div>
+
+          <h2 class="q-text" id="quiz-question-title">Question title goes here?</h2>
+
+          <div class="quiz-options" id="quiz-options-list"></div>
+
+          <div class="explain-box" id="quiz-explanation" style="display:none;"></div>
+
+          <div style="display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" id="btn-next-q" disabled>Next Question ➡️</button>
+          </div>
+        </div>
+
+        <!-- Scorecard -->
+        <div class="quiz-card score-box" id="quiz-results" style="display:none;">
+          <div style="font-size:3.5rem;">🏆</div>
+          <div class="score-big" id="score-percentage">100%</div>
+          <h2 id="score-headline">Outstanding Job!</h2>
+          <p id="score-detail" style="color:var(--text-secondary); max-width:400px;"></p>
+          <button class="btn btn-primary" id="btn-retake-quiz">🔄 Retake Quiz</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODALS -->
+  <!-- Modal: Add Flashcard -->
+  <div class="modal-mask" id="modal-card">
+    <div class="modal-card">
+      <h3 style="font-family:var(--font-heading);">➕ Add New Flashcard</h3>
+      <form id="form-card">
+        <div class="form-group">
+          <label>Front / Question:</label>
+          <textarea class="form-ctrl" id="inp-card-front" required rows="3" placeholder="What is a closure in JavaScript?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Back / Answer:</label>
+          <textarea class="form-ctrl" id="inp-card-back" required rows="3" placeholder="A function that retains access to its outer scope."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tag / Subject:</label>
+          <input type="text" class="form-ctrl" id="inp-card-tag" placeholder="e.g. JavaScript, Science">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modal-card')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: New Deck -->
+  <div class="modal-mask" id="modal-deck">
+    <div class="modal-card">
+      <h3 style="font-family:var(--font-heading);">📂 Create New Deck</h3>
+      <form id="form-deck">
+        <div class="form-group">
+          <label>Deck Title:</label>
+          <input type="text" class="form-ctrl" id="inp-deck-title" required placeholder="e.g. History Facts, Python 101">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modal-deck')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Deck</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: New Quiz -->
+  <div class="modal-mask" id="modal-quiz">
+    <div class="modal-card">
+      <h3 style="font-family:var(--font-heading);">📝 Create New Quiz</h3>
+      <form id="form-quiz">
+        <div class="form-group">
+          <label>Quiz Title:</label>
+          <input type="text" class="form-ctrl" id="inp-quiz-title" required placeholder="e.g. General Science Quiz">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modal-quiz')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Quiz</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Question ("Where user can set it") -->
+  <div class="modal-mask" id="modal-question">
+    <div class="modal-card">
+      <h3 style="font-family:var(--font-heading);">➕ Add Question to Quiz</h3>
+      <form id="form-question">
+        <div class="form-group">
+          <label>Question Text:</label>
+          <textarea class="form-ctrl" id="inp-q-text" required rows="2" placeholder="e.g. Which planet is known as the Red Planet?"></textarea>
+        </div>
+
+        <label style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-top:0.3rem;">
+          Options (Select the radio button for the correct answer):
+        </label>
+
+        <div class="form-group choice-row">
+          <input type="radio" name="correctOpt" value="0" checked>
+          <input type="text" class="form-ctrl" id="inp-opt-0" style="flex:1;" required placeholder="Option A (e.g. Mars)">
+        </div>
+        <div class="form-group choice-row">
+          <input type="radio" name="correctOpt" value="1">
+          <input type="text" class="form-ctrl" id="inp-opt-1" style="flex:1;" required placeholder="Option B (e.g. Venus)">
+        </div>
+        <div class="form-group choice-row">
+          <input type="radio" name="correctOpt" value="2">
+          <input type="text" class="form-ctrl" id="inp-opt-2" style="flex:1;" placeholder="Option C (optional, e.g. Jupiter)">
+        </div>
+        <div class="form-group choice-row">
+          <input type="radio" name="correctOpt" value="3">
+          <input type="text" class="form-ctrl" id="inp-opt-3" style="flex:1;" placeholder="Option D (optional, e.g. Saturn)">
+        </div>
+
+        <div class="form-group">
+          <label>Explanation Note (Optional):</label>
+          <input type="text" class="form-ctrl" id="inp-q-explain" placeholder="e.g. Mars is red due to iron oxide on its surface.">
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modal-question')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Question</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC -->
+  <script>
+    /* ===================================================
+       1. SOUND SYNTHESIZER (Pure Web Audio API)
+       =================================================== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq, type = 'sine', duration = 0.15) {
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playChime() {
+      [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+        setTimeout(() => playBeep(f, 'triangle', 0.4), i * 120);
+      });
+    }
+
+    function showToast(msg) {
+      const box = document.getElementById('toast-box');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      box.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transition = 'opacity 0.3s';
+        setTimeout(() => t.remove(), 300);
+      }, 2500);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    /* ===================================================
+       2. TAB NAVIGATION & THEME
+       =================================================== */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playBeep(400, 'sine', 0.05);
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    const themeBtn = document.getElementById('theme-btn');
+    themeBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      themeBtn.textContent = next === 'dark' ? '☀️' : '🌙';
+      playBeep(500, 'sine', 0.05);
+    });
+
+    /* ===================================================
+       3. POMODORO CLOCK
+       =================================================== */
+    let pomoTime = 25 * 60;
+    let pomoDuration = 25 * 60;
+    let pomoTimer = null;
+    let pomoMode = 'focus';
+    let pomoCycle = 1;
+    let totalFocusedMins = 0;
+    const CIRCUMFERENCE = 2 * Math.PI * 125;
+
+    const timerDisplay = document.getElementById('timer-display');
+    const timerLabel = document.getElementById('timer-label');
+    const dialProgress = document.getElementById('dial-progress');
+    const btnStart = document.getElementById('btn-start');
+    const startTxt = document.getElementById('start-txt');
+    const startIcon = document.getElementById('start-icon');
+    const sessionInfo = document.getElementById('session-info');
+    const pomoToday = document.getElementById('pomo-today');
+
+    function updatePomoDisplay() {
+      const m = Math.floor(pomoTime / 60);
+      const s = pomoTime % 60;
+      timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      const offset = CIRCUMFERENCE * (1 - pomoTime / pomoDuration);
+      dialProgress.style.strokeDashoffset = offset;
+    }
+
+    function toggleTimer() {
+      playBeep(450, 'sine', 0.05);
+      if (pomoTimer) {
+        clearInterval(pomoTimer);
+        pomoTimer = null;
+        startTxt.textContent = 'Start Focus';
+        startIcon.textContent = '▶️';
+      } else {
+        startTxt.textContent = 'Pause';
+        startIcon.textContent = '⏸️';
+        pomoTimer = setInterval(() => {
+          if (pomoTime > 0) {
+            pomoTime--;
+            updatePomoDisplay();
+          } else {
+            clearInterval(pomoTimer);
+            pomoTimer = null;
+            playChime();
+            if (pomoMode === 'focus') {
+              totalFocusedMins += Math.round(pomoDuration / 60);
+              pomoToday.textContent = `Today: ${totalFocusedMins} mins focused`;
+              showToast('🎯 Focus session complete! Time for a break.');
+              pomoCycle++;
+              switchPomoMode(pomoCycle % 4 === 0 ? 'long' : 'short');
+            } else {
+              showToast('☕ Break over! Ready to focus?');
+              switchPomoMode('focus');
+            }
+            sessionInfo.textContent = `Cycle ${pomoCycle} of 4`;
+            startTxt.textContent = 'Start Focus';
+            startIcon.textContent = '▶️';
+          }
+        }, 1000);
+      }
+    }
+
+    function switchPomoMode(mode) {
+      if (pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; }
+      pomoMode = mode;
+      document.querySelectorAll('.mode-pill').forEach(pill => {
+        pill.classList.toggle('active', pill.dataset.mode === mode);
+      });
+      if (mode === 'focus') {
+        pomoDuration = 25 * 60;
+        timerLabel.textContent = 'Focus Session';
+        dialProgress.style.stroke = 'var(--primary)';
+      } else if (mode === 'short') {
+        pomoDuration = 5 * 60;
+        timerLabel.textContent = 'Short Break';
+        dialProgress.style.stroke = 'var(--success)';
+      } else {
+        pomoDuration = 15 * 60;
+        timerLabel.textContent = 'Long Break';
+        dialProgress.style.stroke = '#06b6d4';
+      }
+      pomoTime = pomoDuration;
+      startTxt.textContent = 'Start Focus';
+      startIcon.textContent = '▶️';
+      updatePomoDisplay();
+    }
+
+    btnStart.addEventListener('click', toggleTimer);
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      playBeep(350, 'sine', 0.05);
+      switchPomoMode(pomoMode);
+    });
+    document.getElementById('btn-skip').addEventListener('click', () => {
+      playBeep(500, 'sine', 0.05);
+      switchPomoMode(pomoMode === 'focus' ? 'short' : 'focus');
+    });
+    document.querySelectorAll('.mode-pill').forEach(pill => {
+      pill.addEventListener('click', () => switchPomoMode(pill.dataset.mode));
+    });
+    updatePomoDisplay();
+
+    /* ===================================================
+       4. FLASHCARDS ("FLASK CARD")
+       =================================================== */
+    let decks = JSON.parse(localStorage.getItem('sb_decks')) || [
+      {
+        id: 'd1',
+        title: 'JavaScript Essentials',
+        cards: [
+          { front: 'What is a Closure?', back: 'A function that remembers its outer lexical environment even when executed outside.', tag: 'JS' },
+          { front: 'Difference between == and ===?', back: '== checks equality with type coercion, === checks strict equality without coercion.', tag: 'JS' },
+          { front: 'What is the Event Loop?', back: 'Monitors the call stack and moves tasks from the callback queue when the stack is empty.', tag: 'Runtime' }
+        ]
+      },
+      {
+        id: 'd2',
+        title: 'Science & Nature',
+        cards: [
+          { front: 'Powerhouse of the cell?', back: 'Mitochondria! Generates most of the cell\'s ATP energy.', tag: 'Biology' },
+          { front: 'Speed of light in vacuum?', back: 'Approximately 300,000 km/s (299,792 km/s).', tag: 'Physics' }
+        ]
+      }
+    ];
+
+    let currentDeck = decks[0];
+    let cardIdx = 0;
+    let cardFlipped = false;
+
+    const deckSelect = document.getElementById('deck-select');
+    const card3d = document.getElementById('card-3d');
+    const cardFrontText = document.getElementById('card-front-text');
+    const cardBackText = document.getElementById('card-back-text');
+    const cardTagFront = document.getElementById('card-tag-front');
+    const cardTagBack = document.getElementById('card-tag-back');
+    const cardCounter = document.getElementById('card-counter');
+
+    function saveDecks() {
+      localStorage.setItem('sb_decks', JSON.stringify(decks));
+    }
+
+    function renderDeckOptions() {
+      deckSelect.innerHTML = '';
+      decks.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = `${d.title} (${d.cards.length} cards)`;
+        deckSelect.appendChild(opt);
+      });
+      deckSelect.value = currentDeck.id;
+    }
+
+    function renderCard() {
+      cardFlipped = false;
+      card3d.classList.remove('flipped');
+      if (!currentDeck.cards || currentDeck.cards.length === 0) {
+        cardFrontText.textContent = 'No cards in this deck. Click "+ Add Card" to create one!';
+        cardBackText.textContent = 'Empty Deck';
+        cardTagFront.textContent = 'Empty';
+        cardTagBack.textContent = 'Empty';
+        cardCounter.textContent = '0 of 0';
+        return;
+      }
+      if (cardIdx >= currentDeck.cards.length) cardIdx = 0;
+      if (cardIdx < 0) cardIdx = currentDeck.cards.length - 1;
+      const c = currentDeck.cards[cardIdx];
+      cardFrontText.textContent = c.front;
+      cardBackText.textContent = c.back;
+      cardTagFront.textContent = c.tag || 'Card';
+      cardTagBack.textContent = c.tag || 'Answer';
+      cardCounter.textContent = `Card ${cardIdx + 1} of ${currentDeck.cards.length}`;
+    }
+
+    function flipCard() {
+      playBeep(320, 'triangle', 0.1);
+      cardFlipped = !cardFlipped;
+      card3d.classList.toggle('flipped', cardFlipped);
+    }
+
+    card3d.addEventListener('click', flipCard);
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && document.getElementById('tab-cards').classList.contains('active') && !document.querySelector('.modal-mask.open')) {
+        e.preventDefault();
+        flipCard();
+      }
+    });
+
+    document.getElementById('btn-prev-card').addEventListener('click', () => {
+      if (!currentDeck.cards.length) return;
+      playBeep(400, 'sine', 0.05);
+      cardIdx = (cardIdx - 1 + currentDeck.cards.length) % currentDeck.cards.length;
+      renderCard();
+    });
+
+    document.getElementById('btn-next-card').addEventListener('click', () => {
+      if (!currentDeck.cards.length) return;
+      playBeep(400, 'sine', 0.05);
+      cardIdx = (cardIdx + 1) % currentDeck.cards.length;
+      renderCard();
+    });
+
+    document.getElementById('btn-rate-mastered').addEventListener('click', () => {
+      playBeep(880, 'sine', 0.1);
+      showToast('⭐ Card marked as Mastered!');
+      cardIdx = (cardIdx + 1) % currentDeck.cards.length;
+      renderCard();
+    });
+
+    document.getElementById('btn-rate-again').addEventListener('click', () => {
+      playBeep(300, 'sine', 0.1);
+      showToast('🔄 Marked for review');
+      cardIdx = (cardIdx + 1) % currentDeck.cards.length;
+      renderCard();
+    });
+
+    document.getElementById('btn-shuffle-card').addEventListener('click', () => {
+      playBeep(450, 'sine', 0.05);
+      currentDeck.cards.sort(() => Math.random() - 0.5);
+      cardIdx = 0;
+      renderCard();
+      showToast('🔀 Deck shuffled!');
+    });
+
+    deckSelect.addEventListener('change', (e) => {
+      currentDeck = decks.find(d => d.id === e.target.value) || decks[0];
+      cardIdx = 0;
+      renderCard();
+    });
+
+    // Add Card Modal
+    document.getElementById('btn-add-card').addEventListener('click', () => openModal('modal-card'));
+    document.getElementById('form-card').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const front = document.getElementById('inp-card-front').value.trim();
+      const back = document.getElementById('inp-card-back').value.trim();
+      const tag = document.getElementById('inp-card-tag').value.trim();
+      currentDeck.cards.push({ front, back, tag: tag || 'General' });
+      saveDecks();
+      renderDeckOptions();
+      cardIdx = currentDeck.cards.length - 1;
+      renderCard();
+      closeModal('modal-card');
+      document.getElementById('form-card').reset();
+      showToast('✅ New flashcard added!');
+    });
+
+    // New Deck Modal
+    document.getElementById('btn-new-deck').addEventListener('click', () => openModal('modal-deck'));
+    document.getElementById('form-deck').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('inp-deck-title').value.trim();
+      const newD = { id: 'd_' + Date.now(), title, cards: [] };
+      decks.push(newD);
+      currentDeck = newD;
+      saveDecks();
+      renderDeckOptions();
+      cardIdx = 0;
+      renderCard();
+      closeModal('modal-deck');
+      document.getElementById('form-deck').reset();
+      showToast(`📂 Created deck "${title}"`);
+    });
+
+    // Delete Deck
+    document.getElementById('btn-del-deck').addEventListener('click', () => {
+      if (decks.length <= 1) {
+        alert('You must have at least one deck.');
+        return;
+      }
+      if (confirm(`Delete deck "${currentDeck.title}"?`)) {
+        decks = decks.filter(d => d.id !== currentDeck.id);
+        currentDeck = decks[0];
+        saveDecks();
+        renderDeckOptions();
+        cardIdx = 0;
+        renderCard();
+        showToast('Deck deleted');
+      }
+    });
+
+    // One-Click Deck to Quiz
+    document.getElementById('btn-deck-to-quiz').addEventListener('click', () => {
+      if (currentDeck.cards.length < 2) {
+        alert('Need at least 2 cards to create a quiz!');
+        return;
+      }
+      const questions = currentDeck.cards.map((c, i, arr) => {
+        const others = arr.filter((_, idx) => idx !== i).map(x => x.back);
+        const choices = [c.back, ...others.sort(() => 0.5 - Math.random()).slice(0, 3)].sort(() => 0.5 - Math.random());
+        return {
+          question: c.front,
+          options: choices,
+          correct: choices.indexOf(c.back),
+          explanation: `Answer: ${c.back}`
+        };
+      });
+      const generatedQuiz = { id: 'q_' + Date.now(), title: `${currentDeck.title} (Quiz)`, questions };
+      quizzes.push(generatedQuiz);
+      currentQuiz = generatedQuiz;
+      saveQuizzes();
+      renderQuizOptions();
+      startQuiz();
+      document.querySelector('[data-tab="quiz"]').click();
+      showToast(`⚡ Generated Quiz from "${currentDeck.title}"!`);
+    });
+
+    renderDeckOptions();
+    renderCard();
+
+    /* ===================================================
+       5. QUIZ ("WHERE USER CAN SET IT")
+       =================================================== */
+    let quizzes = JSON.parse(localStorage.getItem('sb_quizzes')) || [
+      {
+        id: 'qz1',
+        title: 'General Knowledge Challenge',
+        questions: [
+          {
+            question: 'Which HTML tag is used to link an external CSS stylesheet?',
+            options: ['<script>', '<link>', '<style>', '<css>'],
+            correct: 1,
+            explanation: '<link rel="stylesheet" href="..."> connects external CSS.'
+          },
+          {
+            question: 'What is the powerhouse of the biological cell?',
+            options: ['Nucleus', 'Ribosome', 'Mitochondria', 'Chloroplast'],
+            correct: 2,
+            explanation: 'Mitochondria generates ATP for the cell.'
+          },
+          {
+            question: 'Which protocol is used for secure web browsing?',
+            options: ['FTP', 'HTTP', 'HTTPS', 'SMTP'],
+            correct: 2,
+            explanation: 'HTTPS encrypts web traffic using TLS/SSL.'
+          }
+        ]
+      }
+    ];
+
+    let currentQuiz = quizzes[0];
+    let qIdx = 0;
+    let quizScore = 0;
+    let qAnswered = false;
+
+    const quizSelect = document.getElementById('quiz-select');
+    const quizPlayer = document.getElementById('quiz-player');
+    const quizResults = document.getElementById('quiz-results');
+    const qBadge = document.getElementById('quiz-progress-badge');
+    const qTitle = document.getElementById('quiz-question-title');
+    const qOptionsList = document.getElementById('quiz-options-list');
+    const qExplanation = document.getElementById('quiz-explanation');
+    const btnNextQ = document.getElementById('btn-next-q');
+
+    function saveQuizzes() {
+      localStorage.setItem('sb_quizzes', JSON.stringify(quizzes));
+    }
+
+    function renderQuizOptions() {
+      quizSelect.innerHTML = '';
+      quizzes.forEach(q => {
+        const opt = document.createElement('option');
+        opt.value = q.id;
+        opt.textContent = `${q.title} (${q.questions.length} Qs)`;
+        quizSelect.appendChild(opt);
+      });
+      quizSelect.value = currentQuiz.id;
+    }
+
+    function startQuiz() {
+      qIdx = 0;
+      quizScore = 0;
+      quizPlayer.style.display = 'flex';
+      quizResults.style.display = 'none';
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      qAnswered = false;
+      btnNextQ.disabled = true;
+      qExplanation.style.display = 'none';
+      if (!currentQuiz.questions || currentQuiz.questions.length === 0) {
+        qBadge.textContent = '0 / 0';
+        qTitle.textContent = 'No questions in this quiz yet. Click "+ Add Question" to create questions!';
+        qOptionsList.innerHTML = '';
+        return;
+      }
+      const q = currentQuiz.questions[qIdx];
+      qBadge.textContent = `Question ${qIdx + 1} of ${currentQuiz.questions.length}`;
+      qTitle.textContent = q.question;
+      qOptionsList.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+
+      q.options.forEach((optText, i) => {
+        const b = document.createElement('button');
+        b.className = 'opt-btn';
+        b.innerHTML = `<span><strong>${letters[i]}.</strong> ${optText}</span><span class="status-icon"></span>`;
+        b.addEventListener('click', () => {
+          if (qAnswered) return;
+          qAnswered = true;
+          const isCorrect = i === q.correct;
+          if (isCorrect) {
+            playBeep(880, 'sine', 0.15);
+            quizScore++;
+            b.classList.add('correct');
+            b.querySelector('.status-icon').textContent = '✅';
+          } else {
+            playBeep(220, 'sawtooth', 0.2);
+            b.classList.add('wrong');
+            b.querySelector('.status-icon').textContent = '❌';
+            const allOpts = qOptionsList.querySelectorAll('.opt-btn');
+            if (allOpts[q.correct]) {
+              allOpts[q.correct].classList.add('correct');
+              allOpts[q.correct].querySelector('.status-icon').textContent = '✅';
+            }
+          }
+          if (q.explanation) {
+            qExplanation.textContent = `💡 ${q.explanation}`;
+            qExplanation.style.display = 'block';
+          }
+          btnNextQ.disabled = false;
+        });
+        qOptionsList.appendChild(b);
+      });
+      btnNextQ.textContent = (qIdx === currentQuiz.questions.length - 1) ? 'Finish Quiz 🏁' : 'Next Question ➡️';
+    }
+
+    btnNextQ.addEventListener('click', () => {
+      playBeep(450, 'sine', 0.05);
+      if (qIdx < currentQuiz.questions.length - 1) {
+        qIdx++;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    });
+
+    function showResults() {
+      playChime();
+      quizPlayer.style.display = 'none';
+      quizResults.style.display = 'flex';
+      const pct = Math.round((quizScore / currentQuiz.questions.length) * 100);
+      document.getElementById('score-percentage').textContent = `${pct}%`;
+      document.getElementById('score-headline').textContent = pct === 100 ? '🌟 Perfect Score!' : (pct >= 60 ? '🚀 Great Job!' : '💪 Keep Practicing!');
+      document.getElementById('score-detail').textContent = `You answered ${quizScore} out of ${currentQuiz.questions.length} questions correctly.`;
+    }
+
+    document.getElementById('btn-retake-quiz').addEventListener('click', () => {
+      playBeep(400, 'sine', 0.05);
+      startQuiz();
+    });
+
+    quizSelect.addEventListener('change', (e) => {
+      currentQuiz = quizzes.find(q => q.id === e.target.value) || quizzes[0];
+      startQuiz();
+    });
+
+    // Add Question Modal ("Where user can set it")
+    document.getElementById('btn-add-question').addEventListener('click', () => openModal('modal-question'));
+    document.getElementById('form-question').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const question = document.getElementById('inp-q-text').value.trim();
+      const o0 = document.getElementById('inp-opt-0').value.trim();
+      const o1 = document.getElementById('inp-opt-1').value.trim();
+      const o2 = document.getElementById('inp-opt-2').value.trim();
+      const o3 = document.getElementById('inp-opt-3').value.trim();
+      const explain = document.getElementById('inp-q-explain').value.trim();
+      const correct = parseInt(document.querySelector('input[name="correctOpt"]:checked').value);
+
+      const options = [o0, o1];
+      if (o2) options.push(o2);
+      if (o3) options.push(o3);
+
+      currentQuiz.questions.push({
+        question,
+        options,
+        correct: Math.min(correct, options.length - 1),
+        explanation: explain
+      });
+
+      saveQuizzes();
+      renderQuizOptions();
+      startQuiz();
+      closeModal('modal-question');
+      document.getElementById('form-question').reset();
+      showToast('🎉 Question added to quiz!');
+    });
+
+    // New Quiz Modal
+    document.getElementById('btn-new-quiz').addEventListener('click', () => openModal('modal-quiz'));
+    document.getElementById('form-quiz').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('inp-quiz-title').value.trim();
+      const newQ = { id: 'qz_' + Date.now(), title, questions: [] };
+      quizzes.push(newQ);
+      currentQuiz = newQ;
+      saveQuizzes();
+      renderQuizOptions();
+      startQuiz();
+      closeModal('modal-quiz');
+      document.getElementById('form-quiz').reset();
+      showToast(`📝 Created quiz "${title}"`);
+    });
+
+    // Delete Quiz
+    document.getElementById('btn-del-quiz').addEventListener('click', () => {
+      if (quizzes.length <= 1) {
+        alert('You must have at least one quiz.');
+        return;
+      }
+      if (confirm(`Delete quiz "${currentQuiz.title}"?`)) {
+        quizzes = quizzes.filter(q => q.id !== currentQuiz.id);
+        currentQuiz = quizzes[0];
+        saveQuizzes();
+        renderQuizOptions();
+        startQuiz();
+        showToast('Quiz deleted');
+      }
+    });
+
+    renderQuizOptions();
+    startQuiz();
+  </script>
+</body>
+</html>
